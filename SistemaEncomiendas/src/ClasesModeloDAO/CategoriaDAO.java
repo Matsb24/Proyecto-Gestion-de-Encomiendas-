@@ -35,7 +35,7 @@ public class CategoriaDAO implements CategoriaInterface {
 
     // Método para listar todas las categorías
     public ArrayList<CategoriaDTO> listarTodo() {
-        String sql = "SELECT * FROM categoria";
+        String sql = "SELECT Categoria_ID, Peso, Ancho, Largo FROM categoria";
         Connection conn = null; // Conexión local
         try {
             conn = con.getConexion();  // Abre la conexión
@@ -76,33 +76,50 @@ public void eliminar(int id) {
     }
 }
 
-public CategoriaDTO obtenerCategoriaPorID(int categoriaID) {
-    String sql = "SELECT * FROM categoria WHERE Categoria_ID = ?";
-    Connection conn = null;
-    CategoriaDTO categoria = null;
-    
-    try {
-        conn = con.getConexion();
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, categoriaID);
-        ResultSet rs = ps.executeQuery();
+public CategoriaDTO buscarCategoriaPor(String tipoCampo, Object valor) {
+    String campo;
 
-        if (rs.next()) {
-            categoria = new CategoriaDTO();
-            categoria.setCategoriaID(rs.getInt("Categoria_ID"));
-            categoria.setPeso(rs.getString("Peso"));
-            categoria.setAncho(rs.getString("Ancho"));
-            categoria.setLargo(rs.getString("Largo"));
-            // Asigna otros atributos según sea necesario
+    switch (tipoCampo) {
+        case "id":
+            campo = "Categoria_ID";
+            break;
+        case "peso":
+            campo = "Peso";
+            break;
+        case "ancho":
+            campo = "Ancho";
+            break;
+        case "largo":
+            campo = "Largo";
+            break;
+        default:
+            throw new IllegalArgumentException("Campo de búsqueda no válido");
+    }
+
+    String sql = "SELECT Categoria_ID, Peso, Ancho, Largo FROM categoria WHERE " + campo + " = ?";
+    CategoriaDTO categoria = null;
+
+    try (
+        Connection conn = con.getConexion();
+        PreparedStatement ps = conn.prepareStatement(sql)
+    ) {
+        ps.setObject(1, valor);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                categoria = new CategoriaDTO();
+                categoria.setCategoriaID(rs.getInt("Categoria_ID"));
+                categoria.setPeso(rs.getString("Peso"));
+                categoria.setAncho(rs.getString("Ancho"));
+                categoria.setLargo(rs.getString("Largo"));
+            }
         }
     } catch (SQLException ex) {
         Logger.getLogger(CategoriaDAO.class.getName()).log(Level.SEVERE, null, ex);
-    } finally {
-        cerrarRecursos(conn);  // Asegúrate de cerrar la conexión
     }
+
     return categoria;
 }
-
 
     // Método para cerrar recursos (Connection, PreparedStatement, ResultSet)
     private void cerrarRecursos(Connection conn) {
