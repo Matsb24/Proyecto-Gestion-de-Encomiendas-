@@ -14,9 +14,7 @@ public class Lista<T> {
     private Nodo cabeza;
     private Nodo cola;
     private int tamaño;
-    private int TopeCola;
     int FrenteCola;
-    private int MaximoCola;
     
     public Lista() {
         cabeza = null;

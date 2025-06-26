@@ -1,181 +1,141 @@
 package ClasesModeloDAO;
 
 import BasedeDatos.Conexion;
-import ClasesModeloDTO.DatosPersonalesDTO;
 import ClasesModeloDTO.UsuarioDTO;
 import MisInterfaces.UsuarioInterface;
+
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UsuarioDAO implements UsuarioInterface {
-    private Conexion con = new Conexion();
-    private PreparedStatement ps = null;
-    private ResultSet rs = null;
 
-    // Método para crear un nuevo usuario
+    private final Conexion con = new Conexion();
+
+    // Crear usuario
     public void crearUsuario(UsuarioDTO usuario) {
         String query = "INSERT INTO usuario (Dni_ID, Rol_ID, Telefono, Contraseña) VALUES (?, ?, ?, ?)";
-        Connection conn = null; // Conexión local
-        try {
-            conn = con.getConexion(); // Abre la conexión
-            ps = conn.prepareStatement(query);
-            ps.setString(1, usuario.getDatosPersonales().getDniID());
+        try (Connection conn = con.getConexion();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, usuario.getDniID());
             ps.setInt(2, usuario.getUsuarioRol());
             ps.setString(3, usuario.getTelefono());
             ps.setString(4, usuario.getContrasena());
-
-            
             ps.executeUpdate();
-
-            // Agregar los datos personales
-            DatosPersonalesDAO datosPersonalesDAO = new DatosPersonalesDAO();
 
         } catch (SQLException ex) {
             Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            cerrarRecursos(rs, ps, conn); // Cierra los recursos
         }
     }
 
-    // Método para obtener un usuario por ID
-    public UsuarioDTO obtenerUsuarioById(int usuarioID) {
-        String query = "SELECT * FROM usuario WHERE Usuario_ID = ?";
+    // Obtener usuario por ID
+    public UsuarioDTO obtenerUsuarioPorID(int usuarioID) {
+        String query = "SELECT Usuario_ID, Dni_ID, Rol_ID, Telefono, Contraseña FROM usuario WHERE Usuario_ID = ?";
         UsuarioDTO usuario = null;
-        Connection conn = null; // Conexión local
-        try {
-            conn = con.getConexion(); // Abre la conexión
-            ps = conn.prepareStatement(query); // Prepara la sentencia SQL
+
+        try (Connection conn = con.getConexion();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
             ps.setInt(1, usuarioID);
-            rs = ps.executeQuery(); // Ejecuta la consulta
-
-            if (rs.next()) {
-                DatosPersonalesDAO datosPersonalesDAO = new DatosPersonalesDAO();
-
-
-                usuario = new UsuarioDTO();
-                usuario.setUsuarioID(rs.getInt("Usuario_ID"));
-                usuario.setTelefono(rs.getString("Telefono"));
-                usuario.setContrasena(rs.getString("Contraseña"));
-
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    usuario = mapearUsuario(rs);
+                }
             }
+
         } catch (SQLException ex) {
             Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            cerrarRecursos(rs, ps, conn); // Cierra los recursos
         }
+
         return usuario;
     }
 
-    //Login
-public UsuarioDTO obtenerUsuarioPorTelefonoYContraseña(String telefono, String contraseña) {
-    String query = "SELECT * FROM usuario WHERE Telefono = ? AND Contraseña = ?";
-    Connection conn = null;
-    UsuarioDTO usuario = null;
+    // Login
+    public UsuarioDTO obtenerUsuarioPorTelefonoYContraseña(String telefono, String contrasena) {
+        String query = "SELECT Usuario_ID, Dni_ID, Rol_ID, Telefono, Contraseña FROM usuario WHERE Telefono = ? AND Contraseña = ?";
+        UsuarioDTO usuario = null;
 
-    try {
-        conn = con.getConexion();  // Obtiene la conexión de la clase Conexion
-        ps = conn.prepareStatement(query);  // Prepara la consulta SQL
-        ps.setString(1, telefono);  // Asigna el primer parámetro (telefono)
-        ps.setString(2, contraseña);  // Asigna el segundo parámetro (contraseña)
+        try (Connection conn = con.getConexion();
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
-        rs = ps.executeQuery();  // Ejecuta la consulta
-        if (rs.next()) {
-            usuario = new UsuarioDTO();  // Si existe un resultado, crea un nuevo UsuarioDTO
-            usuario.setUsuarioID(rs.getInt("Usuario_ID"));
-            usuario.setTelefono(rs.getString("Telefono"));
-            usuario.setContrasena(rs.getString("Contraseña"));
-            usuario.setUsuarioRol(rs.getInt("Rol_ID"));
-        }
-    } catch (SQLException ex) {
-        Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    
-    return usuario;  // Retorna el usuario si se encontró, o null si no se encontró o hubo un error
-}
-    
-    // Método para obtener todos los usuarios
-    public ArrayList<UsuarioDTO> listarTodo() {
-    String sql = "SELECT * FROM usuario";
-    ArrayList<UsuarioDTO> rep = new ArrayList<>(); 
-    try (Connection conn = con.getConexion();
-         PreparedStatement ps = conn.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) { 
+            ps.setString(1, telefono);
+            ps.setString(2, contrasena);
 
-        while (rs.next()) {
-            // Crea una nueva encomienda con los datos obtenidos de la BD
-            UsuarioDTO r = new UsuarioDTO();
-                    r.setUsuarioID(rs.getInt("Usuario_ID"));
-                    r.setDniID(rs.getString("Dni_ID"));
-                    r.setUsuarioRol(rs.getInt("Rol_ID"));
-                    r.setTelefono(rs.getString("Telefono"));
-            rep.add(r); 
-        }
-    } catch (SQLException ex) {
-        Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    return rep; 
-}
-
-    // Método para actualizar un usuario
-    public void actualizarUsuario(UsuarioDTO usuario) {
-        String query = "UPDATE usuario SET Telefono = ?, Contraseña = ?, Dni_ID = ? WHERE Usuario_ID = ?";
-        Connection conn = null; // Conexión local
-        try {
-            conn = con.getConexion(); // Abre la conexión
-            ps = conn.prepareStatement(query);
-            ps.setString(1, usuario.getTelefono());
-            ps.setString(2, usuario.getContrasena());
-            ps.setString(3, usuario.getDatosPersonales().getDniID());
-            ps.setInt(4, usuario.getUsuarioID());
-            ps.executeUpdate();
-
-            // Actualizar los datos personales
-            DatosPersonalesDAO datosPersonalesDAO = new DatosPersonalesDAO();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    usuario = mapearUsuario(rs);
+                }
+            }
 
         } catch (SQLException ex) {
             Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            cerrarRecursos(rs, ps, conn); // Cierra los recursos
+        }
+
+        return usuario;
+    }
+
+    // Listar todos los usuarios
+    public ArrayList<UsuarioDTO> listarTodo() {
+        String query = "SELECT Usuario_ID, Dni_ID, Rol_ID, Telefono, Contraseña FROM usuario";
+        ArrayList<UsuarioDTO> listaUsuarios = new ArrayList<>();
+
+        try (Connection conn = con.getConexion();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                listaUsuarios.add(mapearUsuario(rs));
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return listaUsuarios;
+    }
+
+    // Actualizar usuario
+    public void actualizarUsuario(UsuarioDTO usuario) {
+        String query = "UPDATE usuario SET Telefono = ?, Contraseña = ?, Dni_ID = ?, Rol_ID = ? WHERE Usuario_ID = ?";
+        try (Connection conn = con.getConexion();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, usuario.getTelefono());
+            ps.setString(2, usuario.getContrasena());
+            ps.setString(3, usuario.getDniID());
+            ps.setInt(4, usuario.getUsuarioRol());
+            ps.setInt(5, usuario.getUsuarioID());
+            ps.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    // Método para eliminar un usuario
-    public void deleteUsuario(int usuarioID) {
+    // Eliminar usuario
+    public void eliminarUsuario(int usuarioID) {
         String query = "DELETE FROM usuario WHERE Usuario_ID = ?";
-        Connection conn = null; // Conexión local
-        try {
-            conn = con.getConexion(); // Abre la conexión
-            ps = conn.prepareStatement(query);
+        try (Connection conn = con.getConexion();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
             ps.setInt(1, usuarioID);
             ps.executeUpdate();
 
-            DatosPersonalesDAO datosPersonalesDAO = new DatosPersonalesDAO();
-            UsuarioDTO usuario = obtenerUsuarioById(usuarioID);
-
         } catch (SQLException ex) {
             Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            cerrarRecursos(rs, ps, conn); // Cierra los recursos
         }
     }
 
-    // Método para cerrar recursos
-    private void cerrarRecursos(ResultSet rs, PreparedStatement ps, Connection conn) {
-        try {
-            if (rs != null) {
-                rs.close(); // Cierra el ResultSet
-            }
-            if (ps != null) {
-                ps.close(); // Cierra el PreparedStatement
-            }
-            if (conn != null) {
-                conn.close(); // Cierra la conexión
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, "Error al cerrar los recursos", ex);
-        }
+    // Mapeo de ResultSet a UsuarioDTO
+    private UsuarioDTO mapearUsuario(ResultSet rs) throws SQLException {
+        UsuarioDTO usuario = new UsuarioDTO();
+        usuario.setUsuarioID(rs.getInt("Usuario_ID"));
+        usuario.setDniID(rs.getString("Dni_ID"));
+        usuario.setUsuarioRol(rs.getInt("Rol_ID"));
+        usuario.setTelefono(rs.getString("Telefono"));
+        usuario.setContrasena(rs.getString("Contraseña"));
+        return usuario;
     }
 }
