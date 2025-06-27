@@ -4,12 +4,12 @@ package ClasesModeloDTO;
 
 public class CategoriaDTO {
     
-    protected int CategoriaID;
-    protected String Peso;
-    protected String Ancho;
-    protected String Largo;
+    private int CategoriaID;
+    private String Peso;
+    private String Ancho;
+    private String Largo;
 
-    // Getters y setters...
+    // Getters y setters
 
     public int getCategoriaID() {
         return CategoriaID;

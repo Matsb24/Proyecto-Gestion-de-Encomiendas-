@@ -1,13 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
+
 package MisInterfaces;
 
-/**
- *
- * @author Matias
- */
+import ClasesModeloDTO.ClienteDTO;
+import java.util.List;
+
 public interface ClienteInterface {
     
+    int crearCliente(ClienteDTO cliente);
+    
+    ClienteDTO buscarClientePor(String campo, Object valor);
+    
+    List<ClienteDTO> listarTodo();
+    
+    boolean actualizarCliente(ClienteDTO cliente);
+    
+    boolean eliminarCliente(int clienteID);
 }
+
