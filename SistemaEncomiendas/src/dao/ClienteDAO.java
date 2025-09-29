@@ -128,6 +128,54 @@ public class ClienteDAO implements ClienteInterface {
         return false;
     }
 
+    // Obtener nombre por ID
+    public ClienteDTO obtenerNombreClientePorID(int empresaID) {
+        String sql = "SELECT Cliente_ID, NombreCliente FROM clientes WHERE Cliente_ID = ?";
+        ClienteDTO nombre = null;
+
+        try (
+            Connection conn = con.getConexion();
+            PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setInt(1, empresaID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    nombre = new ClienteDTO();
+                    nombre.setClienteID(rs.getInt("Cliente_ID"));
+                    nombre.setNombreCliente(rs.getString("NombreCliente"));
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ClienteDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return nombre;
+    }
+    
+    // Obtener correo por ID
+    public ClienteDTO obtenerCorreoClientePorID(int empresaID) {
+        String sql = "SELECT Cliente_ID, Correo FROM clientes WHERE Cliente_ID = ?";
+        ClienteDTO nombre = null;
+
+        try (
+            Connection conn = con.getConexion();
+            PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setInt(1, empresaID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    nombre = new ClienteDTO();
+                    nombre.setClienteID(rs.getInt("Cliente_ID"));
+                    nombre.setCorreo(rs.getString("Correo"));
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ClienteDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return nombre;
+    }
+    
     // Eliminar cliente
     public boolean eliminarCliente(int clienteID) {
         String sql = "DELETE FROM clientes WHERE Cliente_ID = ?";

@@ -12,7 +12,6 @@ import dao.EstadoDAO;
 import dao.RepartidorDAO;
 import dto.EncomiendaDTO;
 import dto.EnvioDTO;
-import utils.OrdenarDatos.OrdenaEnvio;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +31,9 @@ public class GestionEnvios extends javax.swing.JPanel {
 
     DefaultTableModel tablapaquetes = new DefaultTableModel();
     ArrayList<EnvioDTO> listaEnv;
-    OrdenaEnvio OrdEnv;
     
     public GestionEnvios() {
         initComponents();
-        OrdEnv = new utils.OrdenarDatos.OrdenaEnvio();
         
         mostrarCabeceraPaq();
         MostrarEncomiendas();
@@ -78,67 +75,68 @@ public class GestionEnvios extends javax.swing.JPanel {
 }
     
     private void listarEnvios() {
-        ClienteDAO clientedao = new ClienteDAO();
-        EncomiendaDAO encomiendadao = new EncomiendaDAO();
-        EmpresasDAO empresasdao = new EmpresasDAO();
-        RepartidorDAO repartidordao = new RepartidorDAO();
-        EstadoDAO estadodao = new EstadoDAO();
-    for (EnvioDTO envio : OrdEnv.getLista()) {
-        // Obtener el nombre del repartidor usando su DNI
-        String nombreCliente = clientedao.obtenerNombrePorClienteID(envio.getClienteID());
-        // Verificar que el nombre no sea nulo o vacío
+    EnvioDAO envioDAO = new EnvioDAO();
+    ClienteDAO clientedao = new ClienteDAO();
+    EncomiendaDAO encomiendadao = new EncomiendaDAO();
+    EmpresasDAO empresasdao = new EmpresasDAO();
+    RepartidorDAO repartidordao = new RepartidorDAO();
+    EstadoDAO estadodao = new EstadoDAO();
+
+    // Obtienes todos los envíos desde el DAO
+    ArrayList<EnvioDTO> listaEnvios = envioDAO.listarTodo();
+
+    for (EnvioDTO envio : listaEnvios) {
+        // Cliente nombre
+        String nombreCliente = (clientedao.obtenerNombreClientePorID(envio.getClienteID())).toString();
         if (nombreCliente == null || nombreCliente.isEmpty()) {
-            nombreCliente = "Nombre no encontrado"; // Texto en caso de que no se encuentre el nombre
+            nombreCliente = "Nombre no encontrado";
         }
-        
-        //Correo
-        String CorreoCliente = clientedao.obtenerCorreoPorClienteID(envio.getClienteID());
-        // Verificar que el nombre no sea nulo o vacío
-        if (CorreoCliente == null || CorreoCliente.isEmpty()) {
-            CorreoCliente = "Correo no encontrado"; // Texto en caso de que no se encuentre el nombre
+
+        // Cliente correo
+        String correoCliente = (clientedao.obtenerCorreoClientePorID(envio.getClienteID())).toString();
+        if (correoCliente == null || correoCliente.isEmpty()) {
+            correoCliente = "Correo no encontrado";
         }
-        
-        //Empresa nombre
-        int IdEmpresa = encomiendadao.obtenerEmpresaIDPorEncomiendaID(envio.getEncomiendaID());
-        String NombreEmpresa = empresasdao.obtenerNombreEmpporEmpresaID(IdEmpresa);
-        // Verificar que el nombre no sea nulo o vacío
-        if (NombreEmpresa == null || NombreEmpresa.isEmpty()) {
-            NombreEmpresa = "Empresa no encontrado"; // Texto en caso de que no se encuentre el nombre
+
+        // Empresa
+        int idEmpresa = Integer.parseInt((String) encomiendadao.obtenerCampoEncomiendaPorID(envio.getEncomiendaID(), "Empresa_ID"));
+        String nombreEmpresa = empresasdao.obtenerNombreEmpresaPorID(idEmpresa);
+        if (nombreEmpresa == null || nombreEmpresa.isEmpty()) {
+            nombreEmpresa = "Empresa no encontrada";
         }
-        
-        //Placa Motorizado
-        String Placa = repartidordao.obtenerRepartidorPlacaPorRepartidorID(envio.getRepartidorID());
-        // Verificar que el nombre no sea nulo o vacío
-        if (Placa == null || Placa.isEmpty()) {
-            Placa = "Repartidor no encontrado"; // Texto en caso de que no se encuentre el nombre
+
+        // Placa repartidor
+        String placa = repartidordao.obtenerRepartidorPlacaPorRepartidorID(envio.getRepartidorID());
+        if (placa == null || placa.isEmpty()) {
+            placa = "Repartidor no encontrado";
         }
-        
-        //Estado
-        String Estado = estadodao.obtenerEstadoNombrePorEstadoID(envio.getEstadoID());
-        // Verificar que el nombre no sea nulo o vacío
-        if (Estado == null || Estado.isEmpty()) {
-            Estado = "Estado no encontrado"; // Texto en caso de que no se encuentre el nombre
+
+        // Estado
+        String estado = estadodao.obtenerEstadoNombrePorEstadoID(envio.getEstadoID());
+        if (estado == null || estado.isEmpty()) {
+            estado = "Estado no encontrado";
         }
-        
-       //Destino
-        String destino = encomiendadao.obtenerDestinoPorEncomiendaID(envio.getEncomiendaID());
-        // Verificar que el nombre no sea nulo o vacío
+
+        // Destino
+        String destino = (encomiendadao.obtenerCampoEncomiendaPorID(envio.getEncomiendaID(), "Destino")).toString();
         if (destino == null || destino.isEmpty()) {
-            destino = "Destino no encontrado"; // Texto en caso de que no se encuentre el nombre
+            destino = "Destino no encontrado";
         }
-        
+
+        // Llenas la fila de la tabla
         Object[] rowData = {
-           nombreCliente,
-            CorreoCliente,
-            NombreEmpresa,
-            Placa,
-            Estado,
+            nombreCliente,
+            correoCliente,
+            nombreEmpresa,
+            placa,
+            estado,
             envio.getFechaEnvio(),
             destino
         };
-        tablapaquetes.addRow(rowData); 
+        tablapaquetes.addRow(rowData);
     }
 }
+
     
 public void MostrarEncomiendas() {
     EnvioDAO envioDAO = new EnvioDAO();
@@ -148,7 +146,6 @@ public void MostrarEncomiendas() {
     tablapaquetes.setRowCount(0); 
 
     if (!listaEnv.isEmpty()) {
-        OrdEnv.actualizarLista(listaEnv); // Actualizar la lista en el objeto Ordena
         listarEnvios(); // Llamar al método para llenar la tabla con los nuevos datos
     } else {
         
@@ -199,13 +196,13 @@ public void MostrarEncomiendas() {
         tblPaquetes.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         tblPaquetes.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Cliente", "Correo", "Empresa", "Motorizado", "Estado", "Pago", "Tipo Pago", "Fecha Envio", "Fecha Registro"
+                "Cliente", "Correo", "Empresa", "Motorizado", "Estado", "Fecha Envio", "Destino"
             }
         ));
         pnlTabla.setViewportView(tblPaquetes);
@@ -472,7 +469,7 @@ try {
         filters.add(RowFilter.regexFilter("(?i)" + txtfMotorizado.getText(), 3));
     }
     if (!txtfDistrito.getText().isEmpty()) {
-        filters.add(RowFilter.regexFilter("(?i)" + txtfDistrito.getText(), 8));
+        filters.add(RowFilter.regexFilter("(?i)" + txtfDistrito.getText(), 6));
     }
     if (!txtfEstado.getText().isEmpty()) {
         filters.add(RowFilter.regexFilter("(?i)" + txtfEstado.getText(), 4));
@@ -496,11 +493,19 @@ try {
     }//GEN-LAST:event_btnLimpiar1ActionPerformed
 
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
+         int rowIndex = tblPaquetes.getSelectedRow();
+    if (rowIndex != -1) {
+        int estadoID = cbxTipoEstado.getSelectedIndex();
+        int envioID = listaEnv.get(rowIndex).getEnvioID(); // Aquí obtienes el ID real
+        
         EnvioDAO enviodao = new EnvioDAO();
-        int Estado = cbxTipoEstado.getSelectedIndex();
-        int EnvioSelec = tblPaquetes.getSelectedRow();
-        enviodao.actualizarEstadoEnvio(Estado, EnvioSelec);
+        enviodao.actualizarEstadoEnvio(estadoID, envioID);
+        
         MostrarEncomiendas();
+        JOptionPane.showMessageDialog(this, "Estado actualizado correctamente");
+    } else {
+        JOptionPane.showMessageDialog(this, "Selecciona un envío primero");
+    }
     }//GEN-LAST:event_btnActualizarActionPerformed
 
 

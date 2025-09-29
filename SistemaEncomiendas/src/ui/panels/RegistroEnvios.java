@@ -16,9 +16,6 @@ import dto.EncomiendaDTO;
 import dto.EnvioDTO;
 import dto.PagoDTO;
 import dto.RepartidorDTO;
-import utils.OrdenarDatos.OrdenaClie;
-import utils.OrdenarDatos.OrdenaEnco;
-import utils.OrdenarDatos.OrdenaRepa;
 
 import java.awt.event.ItemEvent;
 import java.math.BigDecimal;

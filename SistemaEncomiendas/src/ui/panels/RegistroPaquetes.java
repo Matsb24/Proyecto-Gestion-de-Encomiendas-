@@ -12,8 +12,7 @@ import dto.CategoriaDTO;
 import dto.EmpresasDTO;
 import dto.EncomiendaDTO;
 import dto.ubigeoDTO;
-import ui.ui.windows.SistemaAdministrador;
-import utils.OrdenarDatos.OrdenaCate;
+import ui.windows.SistemaAdministrador;
 
 import java.time.LocalDate;
 import java.time.ZoneId;

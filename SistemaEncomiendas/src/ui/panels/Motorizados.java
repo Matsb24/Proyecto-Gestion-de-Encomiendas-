@@ -6,7 +6,6 @@ import dao.RepartidorDAO;
 import dao.UbigeoDAO;
 import dto.DatosPersonalesDTO;
 import dto.RepartidorDTO;
-import utils.OrdenarDatos.OrdenaRepa;
 
 import java.util.ArrayList;
 import javax.swing.JComboBox;

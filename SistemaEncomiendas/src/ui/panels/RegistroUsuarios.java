@@ -4,7 +4,7 @@
  */
 package ui.panels;
 
-import Vista.SistemaAdministrador;
+import ui.windows.SistemaAdministrador;
 import dao.DatosPersonalesDAO;
 import dao.EmpresasDAO;
 import dao.RolDAO;
@@ -14,7 +14,6 @@ import dto.EmpresasDTO;
 import dto.RolDTO;
 import dto.UsuarioDTO;
 import utils.Encriptar.Encriptar;
-import utils.OrdenarDatos.OrdenaUsu;
 
 import java.awt.BorderLayout;
 import java.awt.event.ItemEvent;

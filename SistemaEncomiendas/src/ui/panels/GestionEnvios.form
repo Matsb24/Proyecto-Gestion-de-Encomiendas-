@@ -55,30 +55,18 @@
                   <Font name="Segoe UI" size="12" style="1"/>
                 </Property>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                  <Table columnCount="9" rowCount="4">
+                  <Table columnCount="7" rowCount="4">
                     <Column editable="true" title="Cliente" type="java.lang.Object"/>
                     <Column editable="true" title="Correo" type="java.lang.Object"/>
                     <Column editable="true" title="Empresa" type="java.lang.Object"/>
                     <Column editable="true" title="Motorizado" type="java.lang.Object"/>
                     <Column editable="true" title="Estado" type="java.lang.Object"/>
-                    <Column editable="true" title="Pago" type="java.lang.Object"/>
-                    <Column editable="true" title="Tipo Pago" type="java.lang.Object"/>
                     <Column editable="true" title="Fecha Envio" type="java.lang.Object"/>
-                    <Column editable="true" title="Fecha Registro" type="java.lang.Object"/>
+                    <Column editable="true" title="Destino" type="java.lang.Object"/>
                   </Table>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                   <TableColumnModel selectionModel="0">
-                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                      <Title/>
-                      <Editor/>
-                      <Renderer/>
-                    </Column>
-                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                      <Title/>
-                      <Editor/>
-                      <Renderer/>
-                    </Column>
                     <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                       <Title/>
                       <Editor/>
