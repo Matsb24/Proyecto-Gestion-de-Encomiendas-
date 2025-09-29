@@ -1,12 +1,12 @@
 
 package ui.windows;
 import javax.swing.*;
-import ClasesModeloDAO.UsuarioDAO;
-import ClasesModeloDTO.UsuarioDTO;
-import Encriptar.Encriptar;
-import Vista.SistemaAdministrador;
-import Vista.SistemaAdministrador;
-import Vista.SistemaAdministrador;
+import dao.UsuarioDAO;
+import dto.UsuarioDTO;
+import utils.Encriptar.Encriptar;
+import ui.windows.SistemaAdministrador;
+import ui.windows.SistemaAdministrador;
+import ui.windows.SistemaAdministrador;
 import javax.swing.JOptionPane;
 
 
@@ -146,7 +146,7 @@ String contraseñaIngresada = new String(txtcontraseña.getPassword());
 
 try {
     // Encriptar la contraseña ingresada antes de la comparación
-    String contraseñaEncriptada = Encriptar.encrypt(contraseñaIngresada);
+    String contraseñaEncriptada = Encriptar.hashPassword(contraseñaIngresada);
     
     UsuarioDAO usuarioDAO = new UsuarioDAO();
     // Obtener el usuario usando el teléfono y la contraseña encriptada

@@ -4,8 +4,8 @@
  */
 package ui.windows;
 
-import pnlInterfaces.GestionEnvios;
-import pnlInterfaces.RegistroPaquetes;
+import ui.panels.GestionEnvios;
+import ui.panels.RegistroPaquetes;
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -15,10 +15,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import pnlInterfaces.GestionPagos;
-import pnlInterfaces.Motorizados;
-import pnlInterfaces.RegistroEnvios;
-import pnlInterfaces.RegistroUsuarios;
+import ui.panels.GestionPagos;
+import ui.panels.Motorizados;
+import ui.panels.RegistroEnvios;
+import ui.panels.RegistroUsuarios;
 
 /**
  *
