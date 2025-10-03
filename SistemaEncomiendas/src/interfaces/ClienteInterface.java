@@ -1,7 +1,7 @@
 
 package interfaces;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import dto.ClienteDTO;
 
@@ -11,7 +11,7 @@ public interface ClienteInterface {
     
     ClienteDTO buscarClientePor(String campo, Object valor);
     
-    List<ClienteDTO> listarTodo();
+    ArrayList<ClienteDTO> listarTodo();
     
     boolean actualizarCliente(ClienteDTO cliente);
     

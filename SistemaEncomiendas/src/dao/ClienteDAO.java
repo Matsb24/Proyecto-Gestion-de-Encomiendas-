@@ -79,9 +79,9 @@ public class ClienteDAO implements ClienteInterface {
     }
 
     // Listar todos los clientes
-    public List<ClienteDTO> listarTodo() {
+    public ArrayList<ClienteDTO> listarTodo() {
         String sql = "SELECT Cliente_ID, NombreCliente, Direccion, Correo, Codigo_Ubigeo FROM clientes";
-        List<ClienteDTO> clientes = new ArrayList<>();
+        ArrayList<ClienteDTO> clientes = new ArrayList<>();
 
         try (
             Connection conn = con.getConexion();
@@ -104,6 +104,8 @@ public class ClienteDAO implements ClienteInterface {
 
         return clientes;
     }
+
+    // ...existing code...
 
     // Actualizar cliente
     public boolean actualizarCliente(ClienteDTO cliente) {

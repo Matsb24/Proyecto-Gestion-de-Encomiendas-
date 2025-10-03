@@ -150,6 +150,11 @@ public class RolDAO implements RolInterface {
 
         return listaRoles;
     }
+
+    // Compatibilidad: wrapper que expone el mismo nombre usado por los panels viejos
+    public ArrayList<RolDTO> listarTodo() {
+        return listarRoles();
+    }
 }
 
 

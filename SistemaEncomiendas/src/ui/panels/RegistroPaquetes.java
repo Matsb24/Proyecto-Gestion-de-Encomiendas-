@@ -31,30 +31,19 @@ import javax.swing.table.TableRowSorter;
 public class RegistroPaquetes extends javax.swing.JPanel {
 
     private SistemaAdministrador sistema;
-   DefaultTableModel tablaCategoria = new DefaultTableModel();
+    DefaultTableModel tablaCategoria = new DefaultTableModel(new String[]{"Categoria ID", "Peso", "Ancho", "Largo"}, 0);
     ArrayList<CategoriaDTO> listaCate;
-    OrdenaCate ordC;
     public RegistroPaquetes() {
         initComponents();
         
         cargarComboBoxDistritos(cbxDestino);
         cargarNomEmpresasEnComboBox();
         activar();
-        ordC = new utils.OrdenarDatos.OrdenaCate();
         tblCategoria.setModel(tablaCategoria);
         cbxRegistrarEmpresa.setVisible(false);
         txtNomEmpresa.setVisible(false);
         txtNombreEmpresa.setVisible(false);
-        mostrarCabeceraCate();
         MostrarCategorias();
-    }
-
-    public void mostrarCabeceraCate(){
-        tablaCategoria.addColumn("Categoria ID");
-        tablaCategoria.addColumn("Peso");
-        tablaCategoria.addColumn("Ancho");
-        tablaCategoria.addColumn("Largo");
-        tblCategoria.setModel(tablaCategoria);
     }
     
     private void desactivar(){
@@ -76,35 +65,35 @@ public class RegistroPaquetes extends javax.swing.JPanel {
         jTextField8.setEnabled(true);
     }
     
-     private void listarCategoria() {
-    for (int i = 0; i < ordC.getLista().size(); i++) {
-        Object[] rowData = {
-            ordC.getLista().get(i).getCategoriaID(),
-            ordC.getLista().get(i).getPeso(),
-            ordC.getLista().get(i).getAncho(),
-            ordC.getLista().get(i).getLargo()
-        };
-        tablaCategoria.addRow(rowData); // Agregamos una nueva fila con los datos
+    private void listarCategoria(ArrayList<CategoriaDTO> categorias) {
+        tablaCategoria.setRowCount(0); // limpiar
+        for (CategoriaDTO categoria : categorias) {
+            Object[] rowData = {
+                categoria.getCategoriaID(),
+                categoria.getPeso(),
+                categoria.getAncho(),
+                categoria.getLargo()
+            };
+            tablaCategoria.addRow(rowData);
+        }
     }
-}
    
-   public void MostrarCategorias() {
-    CategoriaDAO ca = new CategoriaDAO(); // No es necesario crear un nuevo CategoriaDTO aquí
-    listaCate = ca.listarTodo(); // Obtener todas las categorías de la base de datos
-    tablaCategoria.setRowCount(0); // Limpiar la tabla antes de agregar nuevos datos
-    TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tblCategoria.getRowSorter();
-    if (sorter != null) {
-        sorter.setRowFilter(null); // Elimina cualquier filtro activo
-        sorter.setSortKeys(null);  // Elimina cualquier ordenación activa
+    public void MostrarCategorias() {
+        CategoriaDAO ca = new CategoriaDAO();
+        listaCate = (ArrayList<CategoriaDTO>) ca.listarCategorias(); // traer directo de la BD
+
+        // Limpiar filtros y ordenación
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tblCategoria.getRowSorter();
+        if (sorter != null) {
+            sorter.setRowFilter(null);
+            sorter.setSortKeys(null);
+        }
+
+        if (!listaCate.isEmpty()) {
+            listarCategoria(listaCate);
+        }
     }
 
-    tablaCategoria.setRowCount(0); // Limpiar la tabla antes de agregar nuevos datos
-
-    if (!listaCate.isEmpty()) {
-        ordC.actualizarLista(listaCate); // Actualizar la lista en el objeto Ordena
-        listarCategoria(); // Llamar al método para llenar la tabla con los nuevos datos
-    }
-}
    
    
 public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
@@ -119,7 +108,7 @@ public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
     public void cargarNomEmpresasEnComboBox() {
         try {
             EmpresasDAO empresasDAO = new EmpresasDAO(); // Instanciar el DAO
-            ArrayList<EmpresasDTO> listaEmpresas = empresasDAO.listarTodo(); // Obtener la lista de empresas
+            ArrayList<EmpresasDTO> listaEmpresas = (ArrayList<EmpresasDTO>) empresasDAO.listarEmpresas(); // Obtener la lista de empresas
             
             // Recorrer la lista de empresas y añadirlas al JComboBox
             for (EmpresasDTO empresa : listaEmpresas) {

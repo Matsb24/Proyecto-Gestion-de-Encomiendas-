@@ -94,6 +94,40 @@ public List<DatosPersonalesDTO> listarDatosPersonales() {
     return datosList;
 }
 
+    // Compatibilidad: exponer listarTodo() para llamadas antiguas desde UI
+    public ArrayList<DatosPersonalesDTO> listarTodo() {
+        ArrayList<DatosPersonalesDTO> lista = new ArrayList<>();
+        for (DatosPersonalesDTO d : listarDatosPersonales()) {
+            lista.add(d);
+        }
+        return lista;
+    }
+
+    // Obtener nombre (Nombre) por DNI (compatibilidad)
+    public String obtenerNombrePorDNI(String dniID) {
+        String nombre = "";
+        String sql = "SELECT Nombre FROM datos_personales WHERE Dni_ID = ?";
+        try (
+            Connection conn = con.getConexion();
+            PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setString(1, dniID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    nombre = rs.getString("Nombre");
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatosPersonalesDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return nombre;
+    }
+
+    // Compatibilidad con nombre antiguo
+    public String obtenerDNINombreMoto(String dniID) {
+        return obtenerNombrePorDNI(dniID);
+    }
+
 
     // Método para actualizar los datos personales
     public boolean actualizarDatosPersonales(DatosPersonalesDTO datosPersonales) {

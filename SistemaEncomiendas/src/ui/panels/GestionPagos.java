@@ -14,12 +14,10 @@ public class GestionPagos extends javax.swing.JPanel {
 
     DefaultTableModel tablaPagos = new DefaultTableModel();
     ArrayList<RepartidorDTO> listaRepa;
-    OrdenaRepa ordrep;
     
     public GestionPagos() {
         initComponents();
         tblListaPagos.setModel(tablaPagos);
-        ordrep = new utils.OrdenarDatos.OrdenaRepa();
         mostrarCabeceraRep();
         llenarTablaPagos();
     }

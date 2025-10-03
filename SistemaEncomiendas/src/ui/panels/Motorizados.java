@@ -16,68 +16,57 @@ public class Motorizados extends javax.swing.JPanel {
 
     DefaultTableModel tablaRepartidor = new DefaultTableModel();
     ArrayList<RepartidorDTO> listaRepa;
-    OrdenaRepa ordrep;
     
     public Motorizados() {
         initComponents();
         tblRepartidor.setModel(tablaRepartidor);
-        ordrep = new utils.OrdenarDatos.OrdenaRepa();
         mostrarCabeceraRep();
         cargarComboBoxDistritos(cbxDistrito);
         MostrarRepartidores();
     }
     
     public void mostrarCabeceraRep(){
-        tablaRepartidor.addColumn("Repartidor_ID");
-        tablaRepartidor.addColumn("DNI_ID");
+        tablaRepartidor.addColumn("ID");
+        tablaRepartidor.addColumn("Nombre");
         tablaRepartidor.addColumn("Telefono");
-        tablaRepartidor.addColumn("Vehiculo_Placa");
-        tablaRepartidor.addColumn("Codigo_UbiGeo");
+        tablaRepartidor.addColumn("Placa");
+        tablaRepartidor.addColumn("Distrito");
         tblRepartidor.setModel(tablaRepartidor);
     }
     
-private void listarRepartidor() {
-    DatosPersonalesDAO datospersonalesDAO = new DatosPersonalesDAO();
-    UbigeoDAO ubigeo = new UbigeoDAO();
-    for (RepartidorDTO repartidor : ordrep.getLista()) {
-        // Obtener el nombre del repartidor usando su DNI
-        String nombreRepartidor = datospersonalesDAO.obtenerDNINombreMoto(repartidor.getDniID());
-        // Verificar que el nombre no sea nulo o vacío
-        if (nombreRepartidor == null || nombreRepartidor.isEmpty()) {
-            nombreRepartidor = "Nombre no encontrado"; // Texto en caso de que no se encuentre el nombre
-        }
-        //obtener nombre distrito usando codigo Ubigeo
-        String Distrito = ubigeo.obtenerDistritoPorCodigoUbigeo(repartidor.getCodigoUbigeo());
-        // Verificar que el distrito no sea nulo o vacío
-        if (Distrito == null || Distrito.isEmpty()) {
-            nombreRepartidor = "Distrito no encontrado"; // Texto en caso de que no se encuentre el nombre
-        }
-        Object[] rowData = {
-            repartidor.getRepartidorID(),
-            nombreRepartidor,  // Mostrar el nombre en lugar del DNI
-            repartidor.getTelefono(),
-            repartidor.getVehiculoPlaca(),
-            Distrito
-        };
-        
-        tablaRepartidor.addRow(rowData); // Agregar una nueva fila con los datos
-    }
-}
-
 public void MostrarRepartidores() {
     RepartidorDAO rep = new RepartidorDAO();
-    listaRepa = rep.listarTodo(); // Obtener todas las encomiendas de la base de datos
+    DatosPersonalesDAO datospersonalesDAO = new DatosPersonalesDAO();
+    UbigeoDAO ubigeo = new UbigeoDAO();
+
+    listaRepa = rep.listarTodo(); 
 
     // Limpiar la tabla antes de agregar nuevos datos
     tablaRepartidor.setRowCount(0); 
 
-    if (!listaRepa.isEmpty()) {
-        ordrep.actualizarLista(listaRepa); // Actualizar la lista en el objeto Ordena
-        listarRepartidor(); // Llamar al método para llenar la tabla con los nuevos datos
-    } else {
-        
+    for (RepartidorDTO repartidor : listaRepa) {
+        // Obtener nombre del repartidor
+        Object resultado = datospersonalesDAO.buscarDatosPersonalesPor("Nombre", repartidor.getDniID());
+        String nombreRepartidor = (resultado != null) ? resultado.toString() : "Nombre no encontrado";
+
+        // Obtener nombre del distrito
+        String distrito = ubigeo.obtenerDistritoPorCodigoUbigeo(repartidor.getCodigoUbigeo());
+        if (distrito == null || distrito.isEmpty()) {
+            distrito = "Distrito no encontrado";
+        }
+
+        Object[] rowData = {
+            repartidor.getRepartidorID(),
+            nombreRepartidor,
+            repartidor.getTelefono(),
+            repartidor.getVehiculoPlaca(),
+            distrito
+        };
+
+        tablaRepartidor.addRow(rowData);
     }
 }
+
     
 public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
     UbigeoDAO ubigeoDAO = new UbigeoDAO(); // Asegúrate de tener la instancia correcta
@@ -119,7 +108,7 @@ public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
         jLabel2 = new javax.swing.JLabel();
         txtApellido = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        txtDirección = new javax.swing.JTextField();
+        txtDireccion = new javax.swing.JTextField();
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -225,7 +214,7 @@ public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel7.setText("Dirección:");
         jPanel2.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 80, -1, -1));
-        jPanel2.add(txtDirección, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 100, 187, -1));
+        jPanel2.add(txtDireccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 100, 187, -1));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -286,7 +275,7 @@ public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
     String Ubigeo = cbxDistrito.getSelectedItem().toString();
     String Nombre = txtNombre.getText();
     String Apellido = txtApellido.getText();
-    String Direccion = txtDirección.getText();
+    String Direccion = txtDireccion.getText();
     
     // Validación de campos vacíos
     if (dni.isEmpty() || telefono.isEmpty() || vehiculoPlaca.isEmpty() || Ubigeo.equals("Selecciona un Distrito") || Nombre.isEmpty() || Apellido.isEmpty() || Direccion.isEmpty()) {
@@ -294,7 +283,7 @@ public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
         return;
     }
 
-    if (dni.trim().length() != 7 || !dni.matches("\\d+")) {
+    if (dni.trim().length() != 8 || !dni.matches("\\d+")) {
         JOptionPane.showMessageDialog(null, "El DNI debe tener 8 dígitos numéricos.", "Error", JOptionPane.WARNING_MESSAGE);
         return;
     }
@@ -342,8 +331,10 @@ public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
         // Mostrar mensaje de éxito
         JOptionPane.showMessageDialog(null, "Motorizado Registrado.", "Registrado", JOptionPane.INFORMATION_MESSAGE);
         MostrarRepartidores();
+        limpiarCampos();
     } catch (Exception e) {
-        
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al registrar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     }//GEN-LAST:event_btnRegistrarActionPerformed
@@ -374,7 +365,7 @@ public void cargarComboBoxDistritos(JComboBox<String> comboBox) {
     private javax.swing.JTable tblRepartidor;
     private javax.swing.JTextField txtApellido;
     private javax.swing.JTextField txtDNI;
-    private javax.swing.JTextField txtDirección;
+    private javax.swing.JTextField txtDireccion;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtPlaca;
     private javax.swing.JTextField txtTelefono;

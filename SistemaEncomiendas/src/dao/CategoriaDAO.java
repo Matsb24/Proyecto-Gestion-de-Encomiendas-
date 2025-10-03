@@ -59,6 +59,15 @@ public class CategoriaDAO implements CategoriaInterface {
         return categorias;
     }
 
+    // Compatibilidad: wrapper que expone listarTodo() para panels antiguos
+    public ArrayList<CategoriaDTO> listarTodo() {
+        ArrayList<CategoriaDTO> lista = new ArrayList<>();
+        for (CategoriaDTO c : listarCategorias()) {
+            lista.add(c);
+        }
+        return lista;
+    }
+
     // Eliminar categoría por ID
     public boolean eliminar(int id) {
         String sql = "DELETE FROM categoria WHERE Categoria_ID = ?";
@@ -122,5 +131,34 @@ public class CategoriaDAO implements CategoriaInterface {
 
         return categoria;
     }
+    
+    // Buscar categoría por ID
+        public CategoriaDTO buscarCategoriaPorId(int id) {
+            String sql = "SELECT Categoria_ID, Peso, Ancho, Largo FROM categoria WHERE Categoria_ID = ?";
+            CategoriaDTO categoria = null;
+
+            try (
+                Connection conn = con.getConexion();
+                PreparedStatement ps = conn.prepareStatement(sql)
+            ) {
+                ps.setInt(1, id);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        categoria = new CategoriaDTO();
+                        categoria.setCategoriaID(rs.getInt("Categoria_ID"));
+                        categoria.setPeso(rs.getString("Peso"));
+                        categoria.setAncho(rs.getString("Ancho"));
+                        categoria.setLargo(rs.getString("Largo"));
+                    }
+                }
+
+            } catch (SQLException ex) {
+                Logger.getLogger(CategoriaDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            return categoria;
+        }
+
 }
 
