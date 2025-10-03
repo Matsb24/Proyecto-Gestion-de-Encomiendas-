@@ -137,5 +137,14 @@ public class EmpresasDAO implements EmpresasInterface {
 
         return nombre;
     }
+
+    // Compatibilidad: listarTodo() (wrapper para llamadas antiguas desde UI)
+    public ArrayList<EmpresasDTO> listarTodo() {
+        ArrayList<EmpresasDTO> lista = new ArrayList<>();
+        for (EmpresasDTO e : listarEmpresas()) {
+            lista.add(e);
+        }
+        return lista;
+    }
 }
 

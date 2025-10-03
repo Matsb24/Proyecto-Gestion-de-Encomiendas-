@@ -4,7 +4,6 @@ package ui.panels;
 import dao.PagoDAO;
 import dto.PagoDTO;
 import dto.RepartidorDTO;
-import utils.OrdenarDatos.OrdenaRepa;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,12 +14,10 @@ public class GestionPagos extends javax.swing.JPanel {
 
     DefaultTableModel tablaPagos = new DefaultTableModel();
     ArrayList<RepartidorDTO> listaRepa;
-    OrdenaRepa ordrep;
     
     public GestionPagos() {
         initComponents();
         tblListaPagos.setModel(tablaPagos);
-        ordrep = new utils.OrdenarDatos.OrdenaRepa();
         mostrarCabeceraRep();
         llenarTablaPagos();
     }

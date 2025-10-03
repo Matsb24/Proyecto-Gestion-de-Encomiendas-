@@ -4,7 +4,7 @@
  */
 package ui.panels;
 
-import Vista.SistemaAdministrador;
+import ui.windows.SistemaAdministrador;
 import dao.DatosPersonalesDAO;
 import dao.EmpresasDAO;
 import dao.RolDAO;
@@ -14,7 +14,6 @@ import dto.EmpresasDTO;
 import dto.RolDTO;
 import dto.UsuarioDTO;
 import utils.Encriptar.Encriptar;
-import utils.OrdenarDatos.OrdenaUsu;
 
 import java.awt.BorderLayout;
 import java.awt.event.ItemEvent;
@@ -22,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.swing.JComboBox;
@@ -39,11 +39,9 @@ public class RegistroUsuarios extends javax.swing.JPanel {
     private SistemaAdministrador sistema;
     DefaultTableModel tablaUsuarios = new DefaultTableModel();
     ArrayList<UsuarioDTO> listaUsuario;
-    OrdenaUsu ordus;
     
     public RegistroUsuarios() {
         initComponents();
-        ordus = new utils.OrdenarDatos.OrdenaUsu();
         cargarRolesEnComboBox();
         mostrarCabeceraUsu();
         MostrarUsuario();
@@ -63,47 +61,66 @@ public class RegistroUsuarios extends javax.swing.JPanel {
         tablaUsuarios.addColumn("Rol");
         tblUsuarios.setModel(tablaUsuarios);
     }
-    
-    
-        private void listarUsuario() {
-            DatosPersonalesDAO datospersonalesDAO = new DatosPersonalesDAO();
-            RolDAO roldao = new RolDAO();
-    for (UsuarioDTO repartidor : ordus.getLista()) {
-        String nombre = datospersonalesDAO.obtenerDNINombreMoto(repartidor.getDniID());
-        // Verificar que el nombre no sea nulo o vacío
-        if (nombre == null || nombre.isEmpty()) {
-            nombre = "Nombre no encontrado"; // Texto en caso de que no se encuentre el nombre
-        }
-        String nombreRol = roldao.obtenerNombrePorRolID(repartidor.getUsuarioRol());
-        // Verificar que el nombre no sea nulo o vacío
-        if (nombre == null || nombre.isEmpty()) {
-            nombre = "Nombre no encontrado"; // Texto en caso de que no se encuentre el nombre
-        }
-        Object[] rowData = {
-            repartidor.getUsuarioID(),
-            nombre,
-            repartidor.getTelefono(),
-            nombreRol,
-        };
-        tablaUsuarios.addRow(rowData);
-    }
-}
    
     //Encomiendas
-public void MostrarUsuario() {
-    UsuarioDAO usuar = new UsuarioDAO();
-    listaUsuario = usuar.listarTodo(); // Obtener todas las encomiendas de la base de datos
+    public void MostrarUsuario() {
+        UsuarioDAO usuar = new UsuarioDAO();
+        listaUsuario = usuar.listarTodo(); // Obtener todos los usuarios
 
-    // Limpiar la tabla antes de agregar nuevos datos
-    tablaUsuarios.setRowCount(0); 
+        // Limpiar tabla antes de rellenar
+        tablaUsuarios.setRowCount(0);
 
-    if (!listaUsuario.isEmpty()) {
-        ordus.actualizarLista(listaUsuario); // Actualizar la lista en el objeto Ordena
-        listarUsuario(); // Llamar al método para llenar la tabla con los nuevos datos
-    } else {
-        
+        // Optional: limpiar filtros/orden
+        try {
+            TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tblUsuarios.getRowSorter();
+            if (sorter != null) {
+                sorter.setRowFilter(null);
+                sorter.setSortKeys(null);
+            }
+        } catch (Exception ex) {
+            // Si no hay RowSorter o hay casting problem, lo ignoramos (no crítico).
+        }
+
+        if (listaUsuario == null || listaUsuario.isEmpty()) {
+            return;
+        }
+
+        DatosPersonalesDAO dpDAO = new DatosPersonalesDAO();
+        RolDAO rolDAO = new RolDAO();
+
+        for (UsuarioDTO usuario : listaUsuario) {
+            // Obtener DNI (intentamos desde DatosPersonales dentro de UsuarioDTO)
+            String dni = "";
+            try {
+                if (usuario.getDatosPersonales() != null) {
+                    DatosPersonalesDTO dp = usuario.getDatosPersonales();
+                    dni = (dp.getDniID() != null) ? dp.getDniID() : "";
+                }
+            } catch (Exception ex) {
+                // Si la estructura del DTO es distinta, dejamos dni vacío
+            }
+
+            String telefono = usuario.getTelefono() != null ? usuario.getTelefono() : "";
+
+            String nombreRol = "Rol no encontrado";
+            try {
+                nombreRol = rolDAO.obtenerNombrePorRolID(usuario.getUsuarioRol());
+                if (nombreRol == null || nombreRol.isEmpty()) {
+                    nombreRol = "Rol no encontrado";
+                }
+            } catch (Exception ex) {
+                nombreRol = "Rol no encontrado";
+            }
+
+            Object[] rowData = {
+                    usuario.getUsuarioID(),
+                    dni,
+                    telefono,
+                    nombreRol
+            };
+            tablaUsuarios.addRow(rowData);
+        }
     }
-}
     
     public void cargarRolesEnComboBox() {
         try {
@@ -272,70 +289,114 @@ public void MostrarUsuario() {
     }//GEN-LAST:event_cbxRolesItemStateChanged
 
     private void btnRegistrarUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarUsuarioActionPerformed
- UsuarioDTO u = new UsuarioDTO();
-    UsuarioDAO us = new UsuarioDAO();
-    DatosPersonalesDTO datosPersonales = new DatosPersonalesDTO();
-    DatosPersonalesDAO dpDAO = new DatosPersonalesDAO();
-    RolDAO rolDAO = new RolDAO(); // DAO para obtener el Rol_ID
+ // Recolectar valores de formulario
+        String dni = txtDNIUsuario.getText().trim();
+        String nombre = txtNombre.getText().trim();
+        String apellido = txtApellido.getText().trim();
+        String direccion = txtDireccion.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+        String correo = txtCorreo.getText().trim();
 
-    // Validaciones de los campos de entrada
-    if (txtDNIUsuario.getText().isEmpty() || txtNombre.getText().isEmpty() || txtApellido.getText().isEmpty() ||
-        txtDireccion.getText().isEmpty() || txtTelefono.getText().isEmpty() ||
-        txtContraseña1.getText().isEmpty() || txtContraseña2.getText().isEmpty()) {
-        
-        JOptionPane.showMessageDialog(null, "No puede dejar los campos vacíos", "Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+        char[] pass1Chars = txtContraseña1.getPassword();
+        char[] pass2Chars = txtContraseña2.getPassword();
+        String pass1 = new String(pass1Chars);
+        String pass2 = new String(pass2Chars);
 
-    } else if (txtDNIUsuario.getText().length() != 7 || !txtDNIUsuario.getText().matches("\\d+")) {
-        // Validación del DNI
-        JOptionPane.showMessageDialog(null, "El DNI debe tener 8 dígitos numéricos.", "DNI Inválido", JOptionPane.WARNING_MESSAGE);
+        // Validaciones básicas
+        if (dni.isEmpty() || nombre.isEmpty() || apellido.isEmpty() ||
+                direccion.isEmpty() || telefono.isEmpty() ||
+                pass1.isEmpty() || pass2.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No puede dejar los campos vacíos", "Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+            // limpiar arrays de contraseña por seguridad
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
+            return;
+        }
 
-    } else if (!txtTelefono.getText().matches("\\d{9}")) {
-        // Validación del teléfono
-        JOptionPane.showMessageDialog(null, "El teléfono debe tener 9 dígitos numéricos.", "Teléfono Inválido", JOptionPane.WARNING_MESSAGE);
+        if (!dni.matches("\\d{8}")) {
+            JOptionPane.showMessageDialog(null, "El DNI debe tener 8 dígitos numéricos.", "DNI Inválido", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
+            return;
+        }
 
-    } else if (txtContraseña1.getText().length() < 6 || txtContraseña1.getText().length() > 20) {
-        // Validación de la contraseña
-        JOptionPane.showMessageDialog(null, "La contraseña debe tener entre 6 y 20 caracteres.", "Contraseña Inválida", JOptionPane.WARNING_MESSAGE);
+        if (!telefono.matches("\\d{9}")) {
+            JOptionPane.showMessageDialog(null, "El teléfono debe tener 9 dígitos numéricos.", "Teléfono Inválido", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
+            return;
+        }
 
-    } else if (!txtContraseña1.getText().equals(txtContraseña2.getText())) {
-        // Verificación de coincidencia de contraseñas
-        JOptionPane.showMessageDialog(null, "Las contraseñas no coinciden.", "Error", JOptionPane.WARNING_MESSAGE);
+        if (pass1.length() < 6 || pass1.length() > 20) {
+            JOptionPane.showMessageDialog(null, "La contraseña debe tener entre 6 y 20 caracteres.", "Contraseña Inválida", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
+            return;
+        }
 
-    } else {
+        if (!pass1.equals(pass2)) {
+            JOptionPane.showMessageDialog(null, "Las contraseñas no coinciden.", "Error", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
+            return;
+        }
+
+        if (!correo.isEmpty() && !isValidEmail(correo)) {
+            JOptionPane.showMessageDialog(null, "El correo electrónico no tiene un formato válido.", "Correo inválido", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
+            return;
+        }
+
+        if (cbxRoles.getSelectedIndex() <= 0) {
+            JOptionPane.showMessageDialog(null, "Por favor selecciona un rol válido.", "Rol inválido", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
+            return;
+        }
+
         try {
-            // PASO 1: Registrar los datos personales en la tabla datos_personales
-            datosPersonales.setDniID(txtDNIUsuario.getText());
-            datosPersonales.setNombre(txtNombre.getText());
-            datosPersonales.setApellido(txtApellido.getText());
-            datosPersonales.setDireccion(txtDireccion.getText());
+            // 1) Crear Datos Personales
+            DatosPersonalesDTO datosPersonales = new DatosPersonalesDTO();
+            datosPersonales.setDniID(dni);
+            datosPersonales.setNombre(nombre);
+            datosPersonales.setApellido(apellido);
+            datosPersonales.setDireccion(direccion);
+            // Si tu DTO tiene setCorreo, podrías asignarlo aquí: datosPersonales.setCorreo(correo);
 
-            dpDAO.crearDatosPersonales(datosPersonales); // Llamada al DAO para registrar los datos personales
+            DatosPersonalesDAO dpDAO = new DatosPersonalesDAO();
+            dpDAO.crearDatosPersonales(datosPersonales);
 
-            // PASO 2: Obtener el Rol_ID del rol seleccionado
-            String nombreRol = cbxRoles.getSelectedItem().toString(); // Obtener el nombre del rol seleccionado
-            int rolID = rolDAO.obtenerRolIDPorNombre(nombreRol); // Obtener el Rol_ID desde el DAO
-
+            // 2) Obtener rol ID
+            String nombreRolSeleccionado = cbxRoles.getSelectedItem().toString();
+            RolDAO rolDAO = new RolDAO();
+            int rolID = rolDAO.obtenerRolIDPorNombre(nombreRolSeleccionado);
             if (rolID == -1) {
                 JOptionPane.showMessageDialog(null, "Rol seleccionado no es válido.", "Error", JOptionPane.WARNING_MESSAGE);
-                return; // Detener la ejecución si no se encuentra un Rol_ID válido
+                Arrays.fill(pass1Chars, '\0');
+                Arrays.fill(pass2Chars, '\0');
+                return;
             }
 
-            // Encriptar la contraseña antes de enviarla a la base de datos
-            String contrasenaEncriptada = Encriptar.encrypt(txtContraseña1.getText());
+            // 3) Encriptar contraseña
+            String contrasenaEncriptada = Encriptar.hashPassword(pass1);
 
-            // PASO 3: Registrar el usuario en la tabla usuario usando el DNI como referencia
-            u.setDatosPersonales(datosPersonales);  // Referencia a datos personales
-            u.setTelefono(txtTelefono.getText());
-            u.setContrasena(contrasenaEncriptada); // Establecer la contraseña encriptada
-            u.setUsuarioRol(rolID); // Asignar el Rol_ID al usuario
+            // 4) Crear Usuario y guardarlo
+            UsuarioDTO u = new UsuarioDTO();
+            u.setDatosPersonales(datosPersonales);
+            u.setTelefono(telefono);
+            u.setContrasena(contrasenaEncriptada);
+            u.setUsuarioRol(rolID);
 
-            us.crearUsuario(u); // Llamada al DAO para registrar el usuario
+            UsuarioDAO us = new UsuarioDAO();
+            us.crearUsuario(u);
 
-            JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente.");
+            JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
+            // Refrescar tabla
             MostrarUsuario();
-            
-            // Limpiar los campos
+
+            // Limpiar formulario
             txtDNIUsuario.setText("");
             txtNombre.setText("");
             txtApellido.setText("");
@@ -343,13 +404,17 @@ public void MostrarUsuario() {
             txtTelefono.setText("");
             txtContraseña1.setText("");
             txtContraseña2.setText("");
-            cbxRoles.setSelectedIndex(0); // Resetear selección de rol
-            
+            txtCorreo.setText("");
+            cbxRoles.setSelectedIndex(0);
+
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error al encriptar la contraseña.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al registrar el usuario: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            // limpiar arrays de contraseña por seguridad
+            Arrays.fill(pass1Chars, '\0');
+            Arrays.fill(pass2Chars, '\0');
         }
-    }
     }//GEN-LAST:event_btnRegistrarUsuarioActionPerformed
 
     private void cbxRolesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxRolesActionPerformed

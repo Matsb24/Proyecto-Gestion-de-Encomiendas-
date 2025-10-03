@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-10-2024 a las 02:52:48
+-- Tiempo de generación: 03-10-2025 a las 21:22:43
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -75,7 +75,7 @@ INSERT INTO `clientes` (`Cliente_ID`, `NombreCliente`, `Direccion`, `Correo`, `C
 --
 
 CREATE TABLE `datos_personales` (
-  `Dni_ID` varchar(7) NOT NULL,
+  `Dni_ID` varchar(8) NOT NULL,
   `Nombre` varchar(35) DEFAULT NULL,
   `Apellido` varchar(35) DEFAULT NULL,
   `Direccion` varchar(50) DEFAULT NULL
@@ -86,8 +86,9 @@ CREATE TABLE `datos_personales` (
 --
 
 INSERT INTO `datos_personales` (`Dni_ID`, `Nombre`, `Apellido`, `Direccion`) VALUES
-('1234567', 'Jose', 'Perez', 'Jiron'),
-('7658469', 'Fernanda', 'Gomez', 'Calle 456');
+('12345678', 'asd', 'asd', 'asd'),
+('64587329', 'dsa', 'dsa', 'dsa'),
+('98765432', 'Juan', 'Perez', 'Ancón');
 
 -- --------------------------------------------------------
 
@@ -151,8 +152,7 @@ CREATE TABLE `envio` (
 --
 
 INSERT INTO `envio` (`Envio_ID`, `Encomienda_ID`, `Fecha_Envio`, `Fecha_Entrega`, `Estado_ID`, `Repartidor_ID`, `Cliente_ID`) VALUES
-(1, 6, '2024-10-25 00:00:00', '2024-11-06 00:00:00', 4, 9, 4),
-(2, 6, '2024-10-24 00:00:00', '2024-10-27 00:00:00', 5, 9, 6);
+(5, 6, '2025-10-03 00:00:00', '2025-10-25 00:00:00', 1, 10, 5);
 
 -- --------------------------------------------------------
 
@@ -199,8 +199,10 @@ INSERT INTO `pagos` (`Pago_ID`, `Cliente_ID`, `Precio`, `Tipo_Pago`) VALUES
 (4, 4, 39.65, 'Yape'),
 (5, 5, 57.04, 'POS'),
 (6, 5, 98.90, 'Transferencia'),
-(7, 4, 101.20, 'POS'),
-(9, 6, 60.18, 'Yape');
+(9, 6, 60.18, 'Yape'),
+(10, 6, 16.52, 'Yape'),
+(11, 5, 9.44, 'Plin'),
+(12, 5, 16.52, 'Plin');
 
 -- --------------------------------------------------------
 
@@ -210,7 +212,7 @@ INSERT INTO `pagos` (`Pago_ID`, `Cliente_ID`, `Precio`, `Tipo_Pago`) VALUES
 
 CREATE TABLE `repartidores` (
   `Repartidor_ID` int(11) NOT NULL,
-  `Dni_ID` varchar(7) DEFAULT NULL,
+  `Dni_ID` varchar(8) DEFAULT NULL,
   `Telefono` varchar(10) DEFAULT NULL,
   `Vehiculo_Placa` varchar(10) DEFAULT NULL,
   `Codigo_Ubigeo` varchar(6) DEFAULT NULL
@@ -221,7 +223,7 @@ CREATE TABLE `repartidores` (
 --
 
 INSERT INTO `repartidores` (`Repartidor_ID`, `Dni_ID`, `Telefono`, `Vehiculo_Placa`, `Codigo_Ubigeo`) VALUES
-(9, '1234567', '465879456', 'RS6-45A', '150104');
+(10, '98765432', '987654321', 'asd-dfg', '150102');
 
 -- --------------------------------------------------------
 
@@ -441,10 +443,10 @@ INSERT INTO `ubigeo` (`UbiGEO_ID`, `Departamento`, `Provincia`, `Distrito`, `Cod
 
 CREATE TABLE `usuario` (
   `Usuario_ID` int(11) NOT NULL,
-  `Dni_ID` varchar(7) DEFAULT NULL,
+  `Dni_ID` varchar(8) DEFAULT NULL,
   `Rol_ID` int(11) DEFAULT NULL,
   `Telefono` varchar(50) DEFAULT NULL,
-  `Contraseña` varchar(50) DEFAULT NULL
+  `Contraseña` varchar(1000) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -452,7 +454,8 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`Usuario_ID`, `Dni_ID`, `Rol_ID`, `Telefono`, `Contraseña`) VALUES
-(1, '7658469', 1, '919465876', '123456');
+(4, '12345678', 1, '123456789', '$2a$10$9muNfpeDr7EwT5wpjaCw4OymwC3ulVef8iz1e6YNEPZQ8Y/n4JR.2'),
+(5, '64587329', 2, '987654321', '$2a$10$xDCffdkDQDOnLAEaUSvpMugi.padoZKzSq4Nnxvz02Z/nbQZiJ9gu');
 
 --
 -- Índices para tablas volcadas
@@ -578,19 +581,19 @@ ALTER TABLE `encomiendas`
 -- AUTO_INCREMENT de la tabla `envio`
 --
 ALTER TABLE `envio`
-  MODIFY `Envio_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Envio_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `Pago_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `Pago_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `repartidores`
 --
 ALTER TABLE `repartidores`
-  MODIFY `Repartidor_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `Repartidor_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `ubigeo`
@@ -602,7 +605,7 @@ ALTER TABLE `ubigeo`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `Usuario_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Usuario_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restricciones para tablas volcadas

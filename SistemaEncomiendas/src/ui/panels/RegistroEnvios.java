@@ -16,9 +16,6 @@ import dto.EncomiendaDTO;
 import dto.EnvioDTO;
 import dto.PagoDTO;
 import dto.RepartidorDTO;
-import utils.OrdenarDatos.OrdenaClie;
-import utils.OrdenarDatos.OrdenaEnco;
-import utils.OrdenarDatos.OrdenaRepa;
 
 import java.awt.event.ItemEvent;
 import java.math.BigDecimal;
@@ -26,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -34,31 +32,23 @@ import javax.swing.table.TableRowSorter;
 
 public class RegistroEnvios extends javax.swing.JPanel {
 
-    DefaultTableModel tablaClientes = new DefaultTableModel();
-    ArrayList<ClienteDTO> listaClie;
-    OrdenaClie ordCli;
-
-    DefaultTableModel tablaRepartidor = new DefaultTableModel();
-    ArrayList<RepartidorDTO> listaRepa;
-    OrdenaRepa ordrep;
-    
-    DefaultTableModel tablaEncomiendas = new DefaultTableModel();
+    List<ClienteDTO> listaClie;
     ArrayList<EncomiendaDTO> listaEnco;
-    OrdenaEnco ordEnc;
+    ArrayList<RepartidorDTO> listaRepa;
+    
+    DefaultTableModel tablaClientes = new DefaultTableModel(new String[]{"Cliente ID","Nombre","Direccion","Correo"}, 0);
+    DefaultTableModel tablaRepartidor = new DefaultTableModel(new String[]{"Repartidor_ID","DNI_ID","Telefono","Vehiculo_Placa","Codigo_UbiGeo"}, 0);
+    DefaultTableModel tablaEncomiendas = new DefaultTableModel(new String[]{"Encomienda_ID","Categoria_ID","Destino","Estado_ID","Fecha"}, 0);
+
+
     public RegistroEnvios() {
         initComponents();
-        ordCli = new utils.OrdenarDatos.OrdenaClie();
         tblClientes.setModel(tablaClientes);
-        ordrep = new utils.OrdenarDatos.OrdenaRepa();
         tblMotori.setModel(tablaRepartidor);
-        ordEnc = new utils.OrdenarDatos.OrdenaEnco();
         tblEncomiendas.setModel(tablaEncomiendas);
         cargarComboBoxDistritos(cbxDistrito);
         cargarComboBoxDistritos(cbxDistritoClient);
         
-        mostrarCabeceraClien();
-        mostrarCabeceraRep();
-        mostrarCabeceraEnco();
         MostrarClientes();
         MostrarRepartidores();
         MostrarEncomiendas();
@@ -90,151 +80,101 @@ public class RegistroEnvios extends javax.swing.JPanel {
     }
         
     //Tabla cliente
-    public void mostrarCabeceraClien(){
-        tablaClientes.addColumn("Cliente ID");
-        tablaClientes.addColumn("Nombre");
-        tablaClientes.addColumn("Direccion");
-        tablaClientes.addColumn("Correo");
-        tblClientes.setModel(tablaClientes);
-    }
     
-    private void listarClientes() {
-    for (int i = 0; i < ordCli.getLista().size(); i++) {
-        Object[] rowData = {
-            ordCli.getLista().get(i).getClienteID(),
-            ordCli.getLista().get(i).getNombreCliente(),
-            ordCli.getLista().get(i).getDireccion(),
-            ordCli.getLista().get(i).getCorreo()
-        };
-        tablaClientes.addRow(rowData);
-    }
-}
     public void MostrarClientes() {
-    ClienteDAO cli = new ClienteDAO(); 
-    listaClie = cli.listarTodo();
-    tablaClientes.setRowCount(0);
-    TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tblClientes.getRowSorter();
+        ClienteDAO cli = new ClienteDAO(); 
+        listaClie = cli.listarTodo();
+        tablaClientes.setRowCount(0);
+
+        if (listaClie != null && !listaClie.isEmpty()) {
+            for (ClienteDTO cliente : listaClie) {
+                Object[] rowData = {
+                    cliente.getClienteID(),
+                    cliente.getNombreCliente(),
+                    cliente.getDireccion(),
+                    cliente.getCorreo()
+                };
+                tablaClientes.addRow(rowData);
+            }
+        }
+    }
     
-    if (sorter != null) {
-        sorter.setRowFilter(null);
-        sorter.setSortKeys(null);
-    }
-
-    tablaClientes.setRowCount(0); 
-
-    if (listaClie != null && !listaClie.isEmpty()) {
-        ordCli.actualizarLista(listaClie);
-        listarClientes();
-    } else {
-        
-    }
-}
     //Tabla Motorizados
-    
-    public void mostrarCabeceraRep(){
-        tablaRepartidor.addColumn("Repartidor_ID");
-        tablaRepartidor.addColumn("DNI_ID");
-        tablaRepartidor.addColumn("Telefono");
-        tablaRepartidor.addColumn("Vehiculo_Placa");
-        tablaRepartidor.addColumn("Codigo_UbiGeo");
-        tblMotori.setModel(tablaRepartidor);
-    }
-    
-private void listarRepartidor() {
-    DatosPersonalesDAO datospersonalesDAO = new DatosPersonalesDAO();
-    UbigeoDAO ubigeo = new UbigeoDAO();
-    for (RepartidorDTO repartidor : ordrep.getLista()) {
-        // Obtener el nombre del repartidor usando su DNI
-        String nombreRepartidor = datospersonalesDAO.obtenerDNINombreMoto(repartidor.getDniID());
-        // Verificar que el nombre no sea nulo o vacío
-        if (nombreRepartidor == null || nombreRepartidor.isEmpty()) {
-            nombreRepartidor = "Nombre no encontrado"; // Texto en caso de que no se encuentre el nombre
-        }
-        //obtener nombre distrito usando codigo Ubigeo
-        String Distrito = ubigeo.obtenerDistritoPorCodigoUbigeo(repartidor.getCodigoUbigeo());
-        // Verificar que el distrito no sea nulo o vacío
-        if (Distrito == null || Distrito.isEmpty()) {
-            nombreRepartidor = "Distrito no encontrado"; // Texto en caso de que no se encuentre el nombre
-        }
-        Object[] rowData = {
-            repartidor.getRepartidorID(),
-            nombreRepartidor,  // Mostrar el nombre en lugar del DNI
-            repartidor.getTelefono(),
-            repartidor.getVehiculoPlaca(),
-            Distrito
-        };
-        
-        tablaRepartidor.addRow(rowData); // Agregar una nueva fila con los datos
-    }
-}
    
-public void MostrarRepartidores() {
-    RepartidorDAO rep = new RepartidorDAO();
-    listaRepa = rep.listarTodo();
-    tablaRepartidor.setRowCount(0); 
-    if (!listaRepa.isEmpty()) {
-        ordrep.actualizarLista(listaRepa);
-        listarRepartidor();
-    } else {
-        
-    }
-}
+    public void MostrarRepartidores() {
+        RepartidorDAO rep = new RepartidorDAO();
+        listaRepa = rep.listarTodo(); // devuelve List<RepartidorDTO>
 
-//Encomiendas
-private void listarEncomienda() {
-    EstadoDAO estadoDAO = new EstadoDAO();
-    
-    for (EncomiendaDTO encomienda : ordEnc.getLista()) {
-        // Obtener la descripción del estado usando EstadoID
-        String descripcionEstado = estadoDAO.obtenerEstadoNombrePorEstadoID(encomienda.getEstadoID());
-        
-        // Verificar que la descripción no sea nula
-        if (descripcionEstado == null) {
-            descripcionEstado = "Descripción no encontrada"; // Texto en caso de que no se encuentre la descripción
+        // Limpiar la tabla antes de cargar nuevos datos
+        tablaRepartidor.setRowCount(0);
+
+        if (listaRepa != null && !listaRepa.isEmpty()) {
+            DatosPersonalesDAO datospersonalesDAO = new DatosPersonalesDAO();
+            UbigeoDAO ubigeoDAO = new UbigeoDAO();
+
+            for (RepartidorDTO repartidor : listaRepa) {
+                String nombreRepartidor = (datospersonalesDAO.buscarDatosPersonalesPor("Nombre",repartidor.getDniID())).toString();
+                if (nombreRepartidor == null || nombreRepartidor.isEmpty()) {
+                    nombreRepartidor = "Nombre no encontrado";
+                }
+
+                String distrito = ubigeoDAO.obtenerDistritoPorCodigoUbigeo(repartidor.getCodigoUbigeo());
+                if (distrito == null || distrito.isEmpty()) {
+                    distrito = "Distrito no encontrado";
+                }
+
+                Object[] rowData = {
+                    repartidor.getRepartidorID(),
+                    nombreRepartidor,
+                    repartidor.getTelefono(),
+                    repartidor.getVehiculoPlaca(),
+                    distrito
+                };
+                tablaRepartidor.addRow(rowData);
+            }
+        }
+    }
+
+    //Encomiendas
+    public void MostrarEncomiendas() {
+        EncomiendaDAO en = new EncomiendaDAO();
+        listaEnco = en.listarTodo(); // Obtener todas las encomiendas de la base de datos
+
+        // Limpiar la tabla antes de agregar nuevos datos
+        tablaEncomiendas.setRowCount(0); 
+
+        // Eliminar filtros y ordenación activa en la tabla
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tblEncomiendas.getRowSorter();
+        if (sorter != null) {
+            sorter.setRowFilter(null); 
+            sorter.setSortKeys(null);
         }
 
-        Object[] rowData = {
-            encomienda.getEncomiendaID(),
-            encomienda.getCategoriaID(),
-            encomienda.getDestino(),
-            descripcionEstado,  // Mostrar la descripción del estado en lugar del EstadoID
-            encomienda.getFecha()
-        };
-        
-        tablaEncomiendas.addRow(rowData); // Agregar una nueva fila con los datos
-    }
-}
-   
-public void MostrarEncomiendas() {
-    EncomiendaDAO en = new EncomiendaDAO();
-    listaEnco = en.listarTodo(); // Obtener todas las encomiendas de la base de datos
+        if (listaEnco != null && !listaEnco.isEmpty()) {
+            EstadoDAO estadoDAO = new EstadoDAO();
 
-    // Limpiar la tabla antes de agregar nuevos datos
-    tablaEncomiendas.setRowCount(0); 
+            for (EncomiendaDTO encomienda : listaEnco) {
+                // Obtener la descripción del estado usando EstadoID
+                String descripcionEstado = estadoDAO.obtenerEstadoNombrePorEstadoID(encomienda.getEstadoID());
 
-    // Eliminar filtros y ordenación activa en la tabla
-    TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tblEncomiendas.getRowSorter();
-    if (sorter != null) {
-        sorter.setRowFilter(null); 
-        sorter.setSortKeys(null);
+                // Verificar que la descripción no sea nula
+                if (descripcionEstado == null || descripcionEstado.isEmpty()) {
+                    descripcionEstado = "Descripción no encontrada";
+                }
+
+                Object[] rowData = {
+                    encomienda.getEncomiendaID(),
+                    encomienda.getCategoriaID(),
+                    encomienda.getDestino(),
+                    descripcionEstado,  // Mostrar la descripción del estado en lugar del EstadoID
+                    encomienda.getFecha()
+                };
+
+                tablaEncomiendas.addRow(rowData); // Agregar una nueva fila con los datos
+            }
+        }
     }
 
-    if (!listaEnco.isEmpty()) {
-        ordEnc.actualizarLista(listaEnco); // Actualizar la lista en el objeto Ordena
-        listarEncomienda(); // Llamar al método para llenar la tabla con los nuevos datos
-    } else {
-        
-    }
-}
-         public void mostrarCabeceraEnco(){
-        tablaEncomiendas.addColumn("Encomienda_ID");
-        tablaEncomiendas.addColumn("Categoria_ID");
-        tablaEncomiendas.addColumn("Destino");
-        tablaEncomiendas.addColumn("Estado_ID");
-        tablaEncomiendas.addColumn("Fecha");
-        tblEncomiendas.setModel(tablaEncomiendas);
-       
-    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -869,7 +809,7 @@ if (txtPrecioPaquete.getText().isEmpty() || txtCantidadPaquete.getText().isEmpty
     CategoriaDAO cat = new CategoriaDAO();
     
     // Obtener la categoría usando el ID
-    CategoriaDTO categoria = cat.obtenerCategoriaPorID(CategoriaID);
+    CategoriaDTO categoria = cat.buscarCategoriaPorId(CategoriaID);
     
     // Si la categoría existe, imprimir peso, alto y ancho en txtCategoria
     if (categoria != null) {
